@@ -33,7 +33,7 @@ For the final term of the C project, you must implement the whole application (m
 // All the line is colored. This is the same as all being white, so it's not counted as you using colors
 ```
 
-✅ $${\color{darkgray}4. \space \color{lightblue}Kiwi \color{darkgray}- \color{lightgreen}1.05\color{darkgray}RON \space \(\color{orange}7 \color{darkgray}bucăți\)}$$<br/>
+✅ $${\color{darkgray}4. \space \color{lightblue}Kiwi \color{darkgray}- \color{lightgreen}0.68\color{darkgray}eur \space \(\color{orange}7 \color{darkgray}pieces\)}$$<br/>
 ```cpp
 // Only the important elements are colored: product name, price and amount
 ```
