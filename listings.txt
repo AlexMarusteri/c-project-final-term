@@ -1,1 +1,5 @@
 aaaaaa,345.00,defrgt
+Penthouse Aviatorilor,1500000.00,This amazing penthouse will give you exquisite views over Bucharest's skyline.
+Studio ,250000.00,This studio is perfect for a student or a young gentleman living alone.
+UVT main building,1.00,The university can no longer afford this so they are looking to sell as quick as possible.
+Family house,780000.00,This house is perfect for a family looking to call a place "home".

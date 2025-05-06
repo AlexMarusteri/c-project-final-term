@@ -1,80 +1,71 @@
-//
-// Created by Alexandru Marusteri on 4/7/25.
-//
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define MAX_LINE 200
 
-// Colors
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
 #define YELLOW  "\033[33m"
 #define CYAN    "\033[36m"
 #define RESET   "\033[0m"
 
-// Struct to represent a real estate listing
 typedef struct {
     char title[50];
     float price;
     char description[100];
 } Listing;
 
-// Function prototypes
 void header();
 Listing readListingFromInput();
 void writeListingToFile(Listing l, const char* path);
 void readListingsFromFile(const char* path);
 int deleteListing(const char* title, const char* path);
+void readAndSortListingsFromFile(const char* path);
+int compareListingsByPrice(const void* a, const void* b);
 void menu(int op, const char* path);
 
-// Display the main menu
 void header() {
-    system("clear"); // clear terminal screen
+    system("clear");
     printf("--------------\n");
     printf(GREEN "ReMax Real Estate\n" RESET "\n");
     printf("Main menu:\n");
     printf(YELLOW "1" RESET " - Add new listing\n");
     printf(YELLOW "2" RESET " - Display current listings\n");
     printf(YELLOW "3" RESET " - Delete listing\n");
+    printf(YELLOW "4" RESET " - Display listings sorted by price\n");
     printf(YELLOW "0" RESET " - Exit\n");
     printf("--------------\n");
 }
 
-// Read listing from user input with validation
 Listing readListingFromInput() {
     Listing l;
     printf("--------------\n");
     printf(GREEN "Add New Listing\n" RESET);
     printf("--------------\n");
 
-    getchar(); // Clear buffer before reading strings
-
-    // Title
+    getchar();
     do {
-        printf("✅ Property Title (max 50 characters): ");
+        printf("✅ Property Title (max 50 characters || eg: Long Beach villa): ");
         fgets(l.title, sizeof(l.title), stdin);
-        l.title[strcspn(l.title, "\n")] = '\0'; // remove newline
+        l.title[strcspn(l.title, "\n")] = '\0';
         if (strlen(l.title) == 0) {
             printf(RED "🚫 Title cannot be empty.\n" RESET);
         }
     } while(strlen(l.title) == 0);
 
-    // Price
     int validPrice = 0;
     while (!validPrice) {
         printf("✅ Property Price (e.g., 123456.78): ");
         if (scanf("%f", &l.price) != 1 || l.price <= 0) {
             printf(RED "🚫 Invalid price. Enter a positive number.\n" RESET);
-            while (getchar() != '\n'); // clear invalid input
+            while (getchar() != '\n');
         } else {
             validPrice = 1;
         }
     }
-    getchar(); // clear newline after price
+    getchar();
 
-    // Description
     do {
         printf("✅ Property Description (max 100 characters): ");
         fgets(l.description, sizeof(l.description), stdin);
@@ -87,7 +78,6 @@ Listing readListingFromInput() {
     return l;
 }
 
-// Write a listing to file
 void writeListingToFile(Listing l, const char* path) {
     FILE *fp = fopen(path, "a");
     if (fp == NULL) {
@@ -99,7 +89,6 @@ void writeListingToFile(Listing l, const char* path) {
     printf(GREEN "✅ Listing added successfully!\n" RESET);
 }
 
-// Read and display all listings from file
 void readListingsFromFile(const char* path) {
     system("clear");
     FILE *fp = fopen(path, "r");
@@ -116,7 +105,7 @@ void readListingsFromFile(const char* path) {
         while (fgets(line, MAX_LINE, fp)) {
             if (line[0] != '\n') {
                 Listing l;
-                line[strcspn(line, "\n")] = '\0'; // remove newline
+                line[strcspn(line, "\n")] = '\0';
                 sscanf(line, "%[^,],%f,%[^\n]", l.title, &l.price, l.description);
 
                 printf(YELLOW "Title:" RESET " %s%s%s\n", CYAN, l.title, RESET);
@@ -137,7 +126,6 @@ void readListingsFromFile(const char* path) {
     getchar();
 }
 
-// Delete a listing by title
 int deleteListing(const char* titleToDelete, const char* path) {
     FILE *fp = fopen(path, "r");
     FILE *temp = fopen("temp.txt", "w");
@@ -169,7 +157,55 @@ int deleteListing(const char* titleToDelete, const char* path) {
     return found;
 }
 
-// Handle menu operations
+int compareListingsByPrice(const void* a, const void* b) {
+    Listing* l1 = (Listing*)a;
+    Listing* l2 = (Listing*)b;
+    if (l1->price < l2->price) return -1;
+    else if (l1->price > l2->price) return 1;
+    else return 0;
+}
+
+void readAndSortListingsFromFile(const char* path) {
+    system("clear");
+    FILE *fp = fopen(path, "r");
+    char line[MAX_LINE];
+    Listing listings[100];
+    int count = 0;
+
+    printf("--------------\n");
+    printf(GREEN "Sorted Listings by Price\n" RESET);
+    printf("--------------\n");
+
+    if (fp == NULL) {
+        printf(RED "🚫 No listings available.\n" RESET);
+    } else {
+        while (fgets(line, MAX_LINE, fp)) {
+            if (line[0] != '\n') {
+                line[strcspn(line, "\n")] = '\0';
+                sscanf(line, "%[^,],%f,%[^\n]", listings[count].title, &listings[count].price, listings[count].description);
+                count++;
+            }
+        }
+        fclose(fp);
+
+        if (count == 0) {
+            printf(RED "🚫 No listings found.\n" RESET);
+        } else {
+            qsort(listings, count, sizeof(Listing), compareListingsByPrice);
+            for (int i = 0; i < count; i++) {
+                printf(YELLOW "Title:" RESET " %s%s%s\n", CYAN, listings[i].title, RESET);
+                printf(YELLOW "Price:" RESET " %s$%.2f%s\n", GREEN, listings[i].price, RESET);
+                printf(YELLOW "Description:" RESET " %s%s%s\n", CYAN, listings[i].description, RESET);
+                printf("--------------\n");
+            }
+        }
+    }
+
+    printf("Press Enter to continue...");
+    getchar();
+    getchar();
+}
+
 void menu(int op, const char* path) {
     switch(op) {
         case 1: {
@@ -190,10 +226,10 @@ void menu(int op, const char* path) {
             printf(RED "Delete Listing\n" RESET);
             printf("--------------\n");
 
-            getchar(); // clear buffer
+            getchar();
             printf("✅ Title of listing to delete: ");
             fgets(titleToDelete, sizeof(titleToDelete), stdin);
-            titleToDelete[strcspn(titleToDelete, "\n")] = '\0'; // remove newline
+            titleToDelete[strcspn(titleToDelete, "\n")] = '\0';
 
             if (strlen(titleToDelete) == 0) {
                 printf(RED "🚫 Title cannot be empty.\n" RESET);
@@ -209,6 +245,9 @@ void menu(int op, const char* path) {
             getchar();
             break;
         }
+        case 4:
+            readAndSortListingsFromFile(path);
+            break;
         default:
             system("clear");
             printf(GREEN "✅ EXIT!\n" RESET);
@@ -224,12 +263,12 @@ int main() {
         printf("Enter option: ");
         if (scanf("%d", &option) != 1) {
             printf(RED "🚫 Invalid input. Please enter a number.\n" RESET);
-            while (getchar() != '\n'); // clear invalid input
-            option = -1; // invalid option to avoid infinite loop
+            while (getchar() != '\n');
+            option = -1;
             continue;
         }
         menu(option, path);
-    } while(option > 0 && option <= 3);
+    } while(option > 0 && option <= 4);
 
     return 0;
 }
